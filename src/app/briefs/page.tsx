@@ -3,6 +3,8 @@ import { Plus, Briefcase, Sparkles, Building } from "lucide-react";
 import { getBriefs } from "@/lib/services/briefs";
 import { BriefCard } from "@/components/BriefCard";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Brand Campaign Briefs | Prismora",
   description:

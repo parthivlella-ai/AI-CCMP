@@ -11,6 +11,8 @@ import {
 import { getCreators } from "@/lib/services/creators";
 import { CreatorDirectoryExplorer } from "@/components/CreatorDirectoryExplorer";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Discover Creators | Prismora",
   description:
