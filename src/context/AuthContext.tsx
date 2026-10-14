@@ -286,8 +286,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const env = getClientEnv();
     const cleanEmail = data.email.trim().toLowerCase();
 
-    // Unique UUID for each new user
-    const newUserId = `usr-${data.role}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    // Guaranteed valid UUID for database and cross-account compatibility
+    const newUserId =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `00000000-0000-4000-8000-${Date.now().toString(16).padStart(12, "0")}`;
 
     // A. Real Supabase Auth if configured
     if (env.isConfigured) {
@@ -322,6 +325,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             company_name: data.companyName,
             business_category: data.businessCategory || "Advertising & Commercials",
           });
+
+          // Ensure creator profile is initialized for freelancers
+          if (data.role === "freelancer") {
+            await supabase.from("creator_profiles").upsert({
+              id: authId,
+              tagline: "Verified AI Content Creator",
+              specializations: ["cinematic_video"],
+              primary_ai_tools: ["runway_gen3", "flux_1"],
+              starting_rate_cents: 45000,
+              currency: "USD",
+              verification_status: "verified",
+              is_available: true,
+            });
+          }
 
           const profileUser: UserProfile = {
             id: authId,

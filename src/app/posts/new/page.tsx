@@ -191,34 +191,67 @@ export default function NewPostPage() {
     const creatorDisplay = user.display_name || user.full_name || "Creator";
     const creatorHandle = user.handle || "creator";
 
-    const newPost = await createMarketplacePost({
-      creator_id: creatorId,
-      creator: {
-        id: creatorId,
-        display_name: creatorDisplay,
-        handle: creatorHandle,
-        avatar_url: user.avatar_url,
-        bio: user.bio || "Verified AI Content Creator",
-        rating: 5.0,
-      },
-      title: title.trim(),
-      description: description.trim(),
-      media_url: mediaUrl,
-      thumbnail_url: thumbnailUrl || (mediaType === "image" ? mediaUrl : undefined),
-      media_type: mediaType,
-      price_cents: Math.round(parseFloat(price) * 100),
-      currency,
-      category,
-      hashtags: parsedHashtags,
-      ai_tools: selectedTools,
-    });
+    let finalMediaUrl = mediaUrl;
+    let finalThumbnailUrl = thumbnailUrl || (mediaType === "image" ? mediaUrl : undefined);
 
-    setIsSubmitting(false);
-    setSuccess(true);
+    if (uploadFile) {
+      try {
+        const formData = new FormData();
+        formData.append("file", uploadFile);
+        formData.append("userId", creatorId);
 
-    setTimeout(() => {
-      router.push("/portfolio");
-    }, 1200);
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (uploadRes.ok) {
+          const uploadJson = await uploadRes.json();
+          if (uploadJson.url) {
+            finalMediaUrl = uploadJson.url;
+            if (mediaType === "image") {
+              finalThumbnailUrl = uploadJson.url;
+            }
+          }
+        }
+      } catch (uploadErr) {
+        console.warn("[Upload] Server upload fallback:", uploadErr);
+      }
+    }
+
+    try {
+      const newPost = await createMarketplacePost({
+        creator_id: creatorId,
+        creator: {
+          id: creatorId,
+          display_name: creatorDisplay,
+          handle: creatorHandle,
+          avatar_url: user.avatar_url,
+          bio: user.bio || "Verified AI Content Creator",
+          rating: 5.0,
+        },
+        title: title.trim(),
+        description: description.trim(),
+        media_url: finalMediaUrl,
+        thumbnail_url: finalThumbnailUrl,
+        media_type: mediaType,
+        price_cents: Math.round(parseFloat(price) * 100),
+        currency,
+        category,
+        hashtags: parsedHashtags,
+        ai_tools: selectedTools,
+      });
+
+      setIsSubmitting(false);
+      setSuccess(true);
+
+      setTimeout(() => {
+        router.push("/portfolio");
+      }, 1200);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setErrors({ submit: err.message || "Failed to publish post. Please try again." });
+    }
   }
 
   if (authLoading) {

@@ -14,6 +14,7 @@
     "test:verification": "node -e \"require('jiti')(process.cwd())('./scripts/test-verification.ts')\"",
     "test:ai-brief": "node -e \"require('jiti')(process.cwd())('./scripts/test-ai-brief.ts')\"",
     "test:matching": "node -e \"require('jiti')(process.cwd())('./scripts/test-matching.ts')\"",
+    "test:cross-visibility": "node -e \"require('jiti')(process.cwd())('./scripts/test-portfolio-cross-visibility.ts')\"",
     "audit": "node -e \"require('jiti')(process.cwd())('./scripts/audit-full.ts')\""
   },
   "dependencies": {
